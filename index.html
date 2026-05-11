@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Calculadora de Trato</title>
 
   <style>
+
     body{
-      font-family: Arial, sans-serif;
+      font-family:Arial,sans-serif;
       background:#f4f4f4;
       margin:0;
       padding:0;
@@ -21,7 +23,6 @@
       width:100%;
       display:flex;
       justify-content:center;
-      align-items:center;
       padding:15px;
       box-sizing:border-box;
     }
@@ -31,12 +32,11 @@
       padding:20px;
       border-radius:12px;
       box-shadow:0 4px 15px rgba(0,0,0,.1);
-      :100%;
-      max-:420px;
+      width:100%;
+      max-width:420px;
       box-sizing:border-box;
     }
 
-    /* TOPO COM LOGO */
     .topo{
       display:flex;
       align-items:center;
@@ -46,15 +46,14 @@
     }
 
     .logo{
-      width:80px;
-      height:80px;
+      width:55px;
+      height:55px;
       object-fit:contain;
     }
 
     h2{
       margin:0;
-      font-size:32px;
-      font-weight:bold;
+      font-size:28px;
     }
 
     label{
@@ -90,19 +89,27 @@
       padding:12px;
       border-radius:8px;
       font-size:14px;
-      line-height:1.5;
+      line-height:1.7;
     }
+
+    .subtitulo{
+      margin-top:10px;
+      font-size:15px;
+      font-weight:bold;
+      color:#444;
+    }
+
   </style>
 </head>
 
 <body>
 
 <div class="wrapper">
+
   <div class="container">
 
-    <!-- TOPO -->
     <div class="topo">
-      <img src="logo.png" alt="Logo Confinamento" class="logo">
+      <img src="logo.png" class="logo">
       <h2>Calculadora de Trato</h2>
     </div>
 
@@ -115,20 +122,44 @@
     <label>Ração por dia (kg):</label>
     <input type="number" id="racao" value="547">
 
-    <button onclick="calcular()">Calcular</button>
+    <div class="subtitulo">
+      Quantidade já fornecida
+    </div>
+
+    <label>1º trato já fornecido (kg):</label>
+    <input type="number" id="fornecido1" value="0">
+
+    <label>2º trato já fornecido (kg):</label>
+    <input type="number" id="fornecido2" value="0">
+
+    <button onclick="calcular()">
+      Calcular
+    </button>
 
     <div class="resultado" id="resultado"></div>
 
   </div>
+
 </div>
 
 <script>
 
 function calcular(){
 
-  const animais = parseFloat(document.getElementById('animais').value) || 0;
-  const saida = parseFloat(document.getElementById('saida').value) || 0;
-  const racao = parseFloat(document.getElementById('racao').value) || 0;
+  const animais =
+    parseFloat(document.getElementById('animais').value) || 0;
+
+  const saida =
+    parseFloat(document.getElementById('saida').value) || 0;
+
+  const racao =
+    parseFloat(document.getElementById('racao').value) || 0;
+
+  const fornecido1 =
+    parseFloat(document.getElementById('fornecido1').value) || 0;
+
+  const fornecido2 =
+    parseFloat(document.getElementById('fornecido2').value) || 0;
 
   const animaisRestantes = animais - saida;
 
@@ -148,27 +179,75 @@ function calcular(){
     return;
   }
 
+  // consumo individual
   const racaoPorAnimal = racao / animais;
 
-  // consumo dos animais que saíram
+  // desconto dos animais que saíram
   const consumoSaida = racaoPorAnimal * saida;
 
-  // nova quantidade ajustada
+  // total ajustado
   const racaoAjustada = racao - consumoSaida;
 
-  let resultado =
-    `<strong>➡ Restante a fornecer: ${racaoAjustada.toFixed(2)} kg</strong><br><br>`;
+  // quanto já foi fornecido
+  const totalFornecido = fornecido1 + fornecido2;
 
-  // divisão dos tratos
-  let t1 = racaoAjustada * 0.30;
-  let t2 = racaoAjustada * 0.30;
-  let t3 = racaoAjustada * 0.40;
+  // restante
+  const restante = racaoAjustada - totalFornecido;
 
-  resultado += `
-    1º Trato: ${t1.toFixed(2)} kg total → ${(t1/animaisRestantes).toFixed(2)} kg/cab<br>
-    2º Trato: ${t2.toFixed(2)} kg total → ${(t2/animaisRestantes).toFixed(2)} kg/cab<br>
-    3º Trato: ${t3.toFixed(2)} kg total → ${(t3/animaisRestantes).toFixed(2)} kg/cab
+  if(restante < 0){
+
+    document.getElementById('resultado').innerHTML =
+      'Erro: quantidade fornecida maior que o total disponível.';
+
+    return;
+  }
+
+  let resultado = `
+    <strong>
+      ➡ Restante a fornecer: ${restante.toFixed(2)} kg
+    </strong><br><br>
   `;
+
+  // nenhum trato fornecido
+  if(fornecido1 == 0 && fornecido2 == 0){
+
+    let t1 = restante * 0.30;
+    let t2 = restante * 0.30;
+    let t3 = restante * 0.40;
+
+    resultado += `
+      1º Trato: ${t1.toFixed(2)} kg → ${(t1/animaisRestantes).toFixed(2)} kg/cab<br>
+      2º Trato: ${t2.toFixed(2)} kg → ${(t2/animaisRestantes).toFixed(2)} kg/cab<br>
+      3º Trato: ${t3.toFixed(2)} kg → ${(t3/animaisRestantes).toFixed(2)} kg/cab
+    `;
+  }
+
+  // primeiro já fornecido
+  else if(fornecido1 > 0 && fornecido2 == 0){
+
+    let t2 = restante * 0.43;
+    let t3 = restante * 0.57;
+
+    resultado += `
+      ✅ 1º trato já fornecido: ${fornecido1.toFixed(2)} kg<br><br>
+
+      2º Trato: ${t2.toFixed(2)} kg → ${(t2/animaisRestantes).toFixed(2)} kg/cab<br>
+      3º Trato: ${t3.toFixed(2)} kg → ${(t3/animaisRestantes).toFixed(2)} kg/cab
+    `;
+  }
+
+  // primeiro e segundo fornecidos
+  else{
+
+    let t3 = restante;
+
+    resultado += `
+      ✅ 1º trato já fornecido: ${fornecido1.toFixed(2)} kg<br>
+      ✅ 2º trato já fornecido: ${fornecido2.toFixed(2)} kg<br><br>
+
+      3º Trato: ${t3.toFixed(2)} kg → ${(t3/animaisRestantes).toFixed(2)} kg/cab
+    `;
+  }
 
   document.getElementById('resultado').innerHTML = resultado;
 }
