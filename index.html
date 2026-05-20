@@ -6,6 +6,7 @@
   <title>Calculadora de Trato</title>
 
   <style>
+
     body{
       font-family: Arial, sans-serif;
       background:#f4f4f4;
@@ -29,47 +30,55 @@
     .container{
       background:#fff;
       padding:20px;
-      border-radius:12px;
+      border-radius:14px;
       box-shadow:0 4px 15px rgba(0,0,0,.1);
       width:100%;
-      max-width:420px;
+      max-width:450px;
       box-sizing:border-box;
     }
 
-    /* TOPO COM LOGO */
     .topo{
       display:flex;
       align-items:center;
       justify-content:center;
       gap:12px;
       margin-bottom:20px;
+      flex-wrap:wrap;
+      text-align:center;
     }
 
     .logo{
-      width:100px;
-      height:100px;
+      width:90px;
+      height:90px;
       object-fit:contain;
     }
 
     h2{
       margin:0;
-      font-size:32px;
+      font-size:28px;
       font-weight:bold;
+      color:#222;
     }
 
     label{
       font-size:14px;
       font-weight:bold;
+      color:#333;
     }
 
     input, button{
       width:100%;
       padding:12px;
-      margin:6px 0 12px;
+      margin:6px 0 14px;
       border-radius:8px;
       border:1px solid #ccc;
-      font-size:14px;
+      font-size:15px;
       box-sizing:border-box;
+    }
+
+    input:focus{
+      outline:none;
+      border-color:#2e7d32;
     }
 
     button{
@@ -78,6 +87,7 @@
       border:none;
       font-weight:bold;
       cursor:pointer;
+      transition:.2s;
     }
 
     button:hover{
@@ -86,18 +96,38 @@
 
     .resultado{
       margin-top:15px;
-      background:#eef;
-      padding:12px;
-      border-radius:8px;
+      background:#eef4ff;
+      padding:15px;
+      border-radius:10px;
       font-size:14px;
-      line-height:1.5;
+      line-height:1.7;
+      color:#222;
     }
+
+    .destaque{
+      font-size:18px;
+      font-weight:bold;
+      color:#1b5e20;
+      margin-bottom:10px;
+    }
+
+    .linha{
+      margin-bottom:8px;
+    }
+
+    hr{
+      border:none;
+      border-top:1px solid #ccc;
+      margin:15px 0;
+    }
+
   </style>
 </head>
 
 <body>
 
 <div class="wrapper">
+
   <div class="container">
 
     <!-- TOPO -->
@@ -106,20 +136,24 @@
       <h2>Calculadora de Trato</h2>
     </div>
 
-    <label>Total de animais inicial:</label>
-    <input type="number" id="animais" value="20">
+    <label>Total de animais:</label>
+    <input type="number" id="animais" placeholder="Ex: 100">
 
-    <label>Animais que saíram:</label>
-    <input type="number" id="saida" value="0">
+    <label>Total do dia (kg):</label>
+    <input type="number" id="totalDia" placeholder="Ex: 5000">
 
-    <label>Ração por dia (kg):</label>
-    <input type="number" id="racao" value="547">
+    <label>1º trato realizado (kg):</label>
+    <input type="number" id="trato1" placeholder="Opcional">
+
+    <label>2º trato realizado (kg):</label>
+    <input type="number" id="trato2" placeholder="Opcional">
 
     <button onclick="calcular()">Calcular</button>
 
     <div class="resultado" id="resultado"></div>
 
   </div>
+
 </div>
 
 <script>
@@ -127,50 +161,186 @@
 function calcular(){
 
   const animais = parseFloat(document.getElementById('animais').value) || 0;
-  const saida = parseFloat(document.getElementById('saida').value) || 0;
-  const racao = parseFloat(document.getElementById('racao').value) || 0;
+  const totalDia = parseFloat(document.getElementById('totalDia').value) || 0;
 
-  const animaisRestantes = animais - saida;
+  // campos digitados
+  const trato1Input = document.getElementById('trato1').value;
+  const trato2Input = document.getElementById('trato2').value;
 
-  if(animais <= 0 || racao <= 0){
+  // valores numéricos
+  const trato1 = parseFloat(trato1Input) || 0;
+  const trato2 = parseFloat(trato2Input) || 0;
 
-    document.getElementById('resultado').innerHTML =
+  const resultadoDiv = document.getElementById('resultado');
+
+  // validações
+  if(animais <= 0 || totalDia <= 0){
+
+    resultadoDiv.innerHTML =
       'Preencha os dados corretamente.';
 
     return;
   }
 
-  if(animaisRestantes <= 0){
+  // percentuais padrão
+  const p1 = 0.30;
+  const p2 = 0.30;
+  const p3 = 0.40;
 
-    document.getElementById('resultado').innerHTML =
-      'Erro: quantidade de animais restante inválida.';
+  // cálculos ideais
+  const ideal1 = totalDia * p1;
+  const ideal2 = totalDia * p2;
+  const ideal3 = totalDia * p3;
+
+  // verifica se campos estão vazios
+  const trato1Vazio = trato1Input.trim() === "";
+  const trato2Vazio = trato2Input.trim() === "";
+
+  let resultado = "";
+
+  // ===================================================
+  // CASO NÃO INFORME NENHUM TRATO
+  // ===================================================
+
+  if(trato1Vazio && trato2Vazio){
+
+    resultado = `
+
+      <div class="destaque">
+        Divisão automática do trato
+      </div>
+
+      <div class="linha">
+        <strong>1º trato (30%)</strong><br>
+        ${ideal1.toFixed(2)} kg →
+        ${(ideal1 / animais).toFixed(2)} kg/cab
+      </div>
+
+      <div class="linha">
+        <strong>2º trato (30%)</strong><br>
+        ${ideal2.toFixed(2)} kg →
+        ${(ideal2 / animais).toFixed(2)} kg/cab
+      </div>
+
+      <div class="linha">
+        <strong>3º trato (40%)</strong><br>
+        ${ideal3.toFixed(2)} kg →
+        ${(ideal3 / animais).toFixed(2)} kg/cab
+      </div>
+
+    `;
+
+    resultadoDiv.innerHTML = resultado;
+    return;
+  }
+
+  // ===================================================
+  // CASO INFORME APENAS O 1º TRATO
+  // ===================================================
+
+  if(!trato1Vazio && trato2Vazio){
+
+    if(trato1 > totalDia){
+
+      resultadoDiv.innerHTML =
+        'Erro: o 1º trato ultrapassa o total do dia.';
+
+      return;
+    }
+
+    const restante = totalDia - trato1;
+
+    // divide o restante proporcionalmente
+    const sugestao2 = restante * (30 / 70);
+    const sugestao3 = restante * (40 / 70);
+
+    resultado = `
+
+      <div class="destaque">
+        Restante para fornecer: ${restante.toFixed(2)} kg
+      </div>
+
+      <div class="linha">
+        <strong>1º trato realizado</strong><br>
+        ${trato1.toFixed(2)} kg →
+        ${(trato1 / animais).toFixed(2)} kg/cab
+      </div>
+
+      <hr>
+
+      <div class="linha">
+        <strong>2º trato sugerido</strong><br>
+        ${sugestao2.toFixed(2)} kg →
+        ${(sugestao2 / animais).toFixed(2)} kg/cab
+      </div>
+
+      <div class="linha">
+        <strong>3º trato sugerido</strong><br>
+        ${sugestao3.toFixed(2)} kg →
+        ${(sugestao3 / animais).toFixed(2)} kg/cab
+      </div>
+
+    `;
+
+    resultadoDiv.innerHTML = resultado;
+    return;
+  }
+
+  // ===================================================
+  // CASO INFORME 1º E 2º TRATO
+  // ===================================================
+
+  const realizado = trato1 + trato2;
+
+  if(realizado > totalDia){
+
+    resultadoDiv.innerHTML =
+      'Erro: os tratos realizados ultrapassam o total do dia.';
 
     return;
   }
 
-  const racaoPorAnimal = racao / animais;
+  const restante = totalDia - realizado;
 
-  // consumo dos animais que saíram
-  const consumoSaida = racaoPorAnimal * saida;
+  const percentualRealizado = (realizado / totalDia) * 100;
 
-  // nova quantidade ajustada
-  const racaoAjustada = racao - consumoSaida;
+  resultado = `
 
-  let resultado =
-    `<strong>➡ Restante a fornecer: ${racaoAjustada.toFixed(2)} kg</strong><br><br>`;
+    <div class="destaque">
+      Falta fornecer: ${restante.toFixed(2)} kg
+    </div>
 
-  // divisão dos tratos
-  let t1 = racaoAjustada * 0.30;
-  let t2 = racaoAjustada * 0.30;
-  let t3 = racaoAjustada * 0.40;
+    <div class="linha">
+      <strong>Total realizado:</strong>
+      ${realizado.toFixed(2)} kg
+      (${percentualRealizado.toFixed(1)}%)
+    </div>
 
-  resultado += `
-    1º Trato: ${t1.toFixed(2)} kg total → ${(t1/animaisRestantes).toFixed(2)} kg/cab<br>
-    2º Trato: ${t2.toFixed(2)} kg total → ${(t2/animaisRestantes).toFixed(2)} kg/cab<br>
-    3º Trato: ${t3.toFixed(2)} kg total → ${(t3/animaisRestantes).toFixed(2)} kg/cab
+    <hr>
+
+    <div class="linha">
+      <strong>1º trato realizado</strong><br>
+      ${trato1.toFixed(2)} kg →
+      ${(trato1 / animais).toFixed(2)} kg/cab
+    </div>
+
+    <div class="linha">
+      <strong>2º trato realizado</strong><br>
+      ${trato2.toFixed(2)} kg →
+      ${(trato2 / animais).toFixed(2)} kg/cab
+    </div>
+
+    <hr>
+
+    <div class="linha">
+      <strong>3º trato sugerido</strong><br>
+      ${restante.toFixed(2)} kg →
+      ${(restante / animais).toFixed(2)} kg/cab
+    </div>
+
   `;
 
-  document.getElementById('resultado').innerHTML = resultado;
+  resultadoDiv.innerHTML = resultado;
 }
 
 </script>
